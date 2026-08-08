@@ -1,82 +1,18 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="en">
   <head>
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>QuizForge — Modern Learning & Assessment Platform</title>
-    <meta name="description" content="QuizForge interactive quiz and learning application." />
-    <style>
-      :root {
-        --bg: #0b1311;
-        --card-bg: rgba(18, 30, 26, 0.85);
-        --text: #ecfdf5;
-        --accent: #10b981;
-        --accent-hover: #059669;
-        --muted: #9ca3af;
-      }
-      body {
-        margin: 0;
-        padding: 0;
-        font-family: 'DM Sans', system-ui, -apple-system, sans-serif;
-        background-color: var(--bg);
-        color: var(--text);
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        min-height: 100vh;
-        text-align: center;
-      }
-      .container {
-        background: var(--card-bg);
-        border: 1px solid rgba(16, 185, 129, 0.2);
-        backdrop-filter: blur(12px);
-        padding: 2.5rem;
-        border-radius: 1rem;
-        max-width: 480px;
-        width: 90%;
-        box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.5);
-      }
-      h1 {
-        font-size: 2rem;
-        margin-bottom: 0.5rem;
-        color: #5eead4;
-      }
-      p {
-        color: var(--muted);
-        line-height: 1.6;
-        margin-bottom: 1.5rem;
-      }
-      .btn {
-        display: inline-block;
-        background-color: var(--accent);
-        color: #064e3b;
-        font-weight: 700;
-        padding: 0.75rem 1.5rem;
-        border-radius: 0.5rem;
-        text-decoration: none;
-        transition: all 0.2s ease;
-      }
-      .btn:hover {
-        background-color: var(--accent-hover);
-        color: #ffffff;
-      }
-    </style>
+    <meta charset="UTF-8"/>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+    <meta name="description" content="QuizForge interactive learning platform — Emerald Oasis Design"/>
+    <title>QuizForge</title>
+    <!-- Google Fonts: Playfair Display & DM Sans for Emerald Oasis (Digital Traditionalism) -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=DM+Sans:ital,opsz,wght@0,9..40,100..1000;1,9..40,100..1000&family=Playfair+Display:ital,wght@0,400..900;1,400..900&display=swap" rel="stylesheet">
+    <script type="module" crossorigin src="/QUIZ-APPLICATION/assets/index-6Z5OcTYk.js"></script>
+    <link rel="stylesheet" crossorigin href="/QUIZ-APPLICATION/assets/index-CfG0FrzK.css">
   </head>
   <body>
-    <div class="container">
-      <h1>QuizForge</h1>
-      <p>Welcome to QuizForge! Launching interactive quiz platform...</p>
-      <a href="./frontend/dist/index.html" class="btn" id="launch-link">Launch QuizForge</a>
-    </div>
-    <script>
-      // Auto redirect to deployed app frontend if available
-      if (window.location.pathname.indexOf('/frontend/dist') === -1) {
-        // Redirect to build output location or subpath
-        const isGithubPages = window.location.hostname.includes('github.io');
-        if (isGithubPages) {
-          window.location.replace('./');
-        }
-      }
-    </script>
+    <div id="root"></div>
   </body>
 </html>
