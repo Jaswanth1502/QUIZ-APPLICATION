@@ -162,25 +162,23 @@ function handleMockRequest(config: any) {
   // --- USER DASHBOARD & HISTORY ---
   if ((url.includes('/users/me/dashboard') || url.includes('/user/dashboard/stats')) && method === 'get') {
     return mockResponse({
+      statistics: {
+        completedQuizzes: 5,
+        passedAttempts: 4,
+        averageScore: 85.0,
+        bestScore: 100.0
+      },
       totalAttempts: 5,
       passedAttempts: 4,
       averageScore: 85.0,
       bestScore: 100.0,
+      recent: [
+        { id: 1, quiz: 'Java Core & Object-Oriented Architecture', percentage: 100, status: 'PASS', completedAt: '2026-02-05T14:30:00Z' },
+        { id: 2, quiz: 'React 18 Hooks & Component Engineering', percentage: 75, status: 'PASS', completedAt: '2026-02-04T11:20:00Z' }
+      ],
       recentAttempts: [
-        {
-          attemptId: 1,
-          quizTitle: 'Java Core & Object-Oriented Architecture',
-          percentage: 100,
-          status: 'PASS',
-          completedAt: '2026-02-05T14:30:00Z'
-        },
-        {
-          attemptId: 2,
-          quizTitle: 'React 18 Hooks & Component Engineering',
-          percentage: 75,
-          status: 'PASS',
-          completedAt: '2026-02-04T11:20:00Z'
-        }
+        { attemptId: 1, quizTitle: 'Java Core & Object-Oriented Architecture', percentage: 100, status: 'PASS', completedAt: '2026-02-05T14:30:00Z' },
+        { attemptId: 2, quizTitle: 'React 18 Hooks & Component Engineering', percentage: 75, status: 'PASS', completedAt: '2026-02-04T11:20:00Z' }
       ]
     });
   }
