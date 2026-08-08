@@ -88,7 +88,10 @@ export function QuizEditorPage() {
         const {data} = await api.post('/admin/quizzes', payload);
         navigate(`/admin/quizzes/${data.id}/edit`, {replace:true});
       }
-    } catch (e:any) { setError(e.response?.data?.message ?? 'Unable to save quiz.'); }
+    } catch (e:any) {
+      const msg = e.response?.data?.message || (typeof e.response?.data === 'string' ? e.response.data : e.message) || 'Unable to save quiz.';
+      setError(msg);
+    }
   }
   async function addQuestion(questionId:number) {
     if (!quizId) return;

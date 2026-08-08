@@ -283,54 +283,101 @@ function handleMockRequest(config: any) {
   }
 
   // --- ADMIN QUIZZES & QUESTION BANK ---
-  const singleQuizMatch = url.match(/\/(?:admin\/)?quizzes\/(\d+)$/);
-  if (singleQuizMatch && method === 'get') {
-    const quizId = parseInt(singleQuizMatch[1]);
-    const quiz = MOCK_QUIZZES.find(q => q.id === quizId) || MOCK_QUIZZES[0];
-    return mockResponse(quiz);
-  }
-
-  const quizQuestionsMatch = url.match(/\/admin\/quizzes\/(\d+)\/questions/);
-  if (quizQuestionsMatch) {
-    const quizId = parseInt(quizQuestionsMatch[1]);
-    if (method === 'get') {
-      const questions = MOCK_QUESTIONS[quizId] || [];
-      return mockResponse(questions.map((q: any) => ({
-        id: q.id,
-        questionText: q.questionText || q.text || '',
-        text: q.text || q.questionText || '',
-        marks: q.marks || 1,
-        category: q.category || 'General',
-        difficulty: q.difficulty || 'MEDIUM'
-      })));
-    }
-    if (method === 'post') {
-      const params = config.params || {};
-      const questionId = parseInt(params.questionId);
-      let qObj = null;
-      Object.values(MOCK_QUESTIONS).forEach((list: any[]) => {
-        const found = list.find((q: any) => q.id === questionId || String(q.id) === String(questionId));
-        if (found) qObj = found;
-      });
-      if (!MOCK_QUESTIONS[quizId]) MOCK_QUESTIONS[quizId] = [];
-      if (qObj && !MOCK_QUESTIONS[quizId].some((q: any) => q.id === questionId)) {
-        MOCK_QUESTIONS[quizId].push(qObj);
-      }
-      return mockResponse({ message: 'Question linked to quiz successfully' });
-    }
-  }
-
-  const quizQuestionDeleteMatch = url.match(/\/admin\/quizzes\/(\d+)\/questions\/(\d+)/);
-  if (quizQuestionDeleteMatch && method === 'delete') {
-    const quizId = parseInt(quizQuestionDeleteMatch[1]);
-    const questionId = parseInt(quizQuestionDeleteMatch[2]);
-    if (MOCK_QUESTIONS[quizId]) {
-      MOCK_QUESTIONS[quizId] = MOCK_QUESTIONS[quizId].filter((q: any) => q.id !== questionId && String(q.id) !== String(questionId));
-    }
-    return mockResponse({ message: 'Question unlinked successfully' });
-  }
-
   if (url.includes('/admin/quizzes') || (url.includes('/quizzes') && !url.includes('/attempts'))) {
+    const quizQuestionDeleteMatch = url.match(/\/quizzes\/(\d+)\/questions\/(\d+)/);
+    if (quizQuestionDeleteMatch && method === 'delete') {
+      const quizId = parseInt(quizQuestionDeleteMatch[1]);
+      const questionId = parseInt(quizQuestionDeleteMatch[2]);
+      if (MOCK_QUESTIONS[quizId]) {
+        MOCK_QUESTIONS[quizId] = MOCK_QUESTIONS[quizId].filter((q: any) => q.id !== questionId && String(q.id) !== String(questionId));
+      }
+      return mockResponse({ message: 'Question unlinked successfully' });
+    }
+
+    const quizQuestionsMatch = url.match(/\/quizzes\/(\d+)\/questions/);
+    if (quizQuestionsMatch) {
+      const quizId = parseInt(quizQuestionsMatch[1]);
+      if (method === 'get') {
+        const questions = MOCK_QUESTIONS[quizId] || [];
+        return mockResponse(questions.map((q: any) => ({
+          id: q.id,
+          questionText: q.questionText || q.text || '',
+          text: q.text || q.questionText || '',
+          marks: q.marks || 1,
+          category: q.category || 'General',
+          difficulty: q.difficulty || 'MEDIUM'
+        })));
+      }
+      if (method === 'post') {
+        const params = config.params || {};
+        const questionId = parseInt(params.questionId);
+        let qObj = null;
+        Object.values(MOCK_QUESTIONS).forEach((list: any[]) => {
+          const found = list.find((q: any) => q.id === questionId || String(q.id) === String(questionId));
+          if (found) qObj = found;
+        });
+        if (!MOCK_QUESTIONS[quizId]) MOCK_QUESTIONS[quizId] = [];
+        if (qObj && !MOCK_QUESTIONS[quizId].some((q: any) => q.id === questionId)) {
+          MOCK_QUESTIONS[quizId].push(qObj);
+        }
+        return mockResponse({ message: 'Question linked to quiz successfully' });
+      }
+    }
+
+    const quizStatusMatch = url.match(/\/quizzes\/(\d+)\/status/);
+    if (quizStatusMatch && method === 'patch') {
+      const quizId = parseInt(quizStatusMatch[1]);
+      const params = config.params || {};
+      const quiz = MOCK_QUIZZES.find(q => q.id === quizId || String(q.id) === String(quizId));
+      if (quiz) quiz.status = params.status || 'PUBLISHED';
+      return mockResponse(quiz || MOCK_QUIZZES[0]);
+    }
+
+    const singleQuizMatch = url.match(/\/quizzes\/(\d+)$/);
+    if (singleQuizMatch) {
+      const quizId = parseInt(singleQuizMatch[1]);
+      let quizIndex = MOCK_QUIZZES.findIndex(q => q.id === quizId || String(q.id) === String(quizId));
+
+      if (method === 'get') {
+        const quiz = quizIndex >= 0 ? MOCK_QUIZZES[quizIndex] : MOCK_QUIZZES[0];
+        return mockResponse(quiz);
+      }
+
+      if (method === 'put') {
+        const payload = typeof config.data === 'string' ? JSON.parse(config.data || '{}') : (config.data || {});
+        let catObj = MOCK_CATEGORIES.find(c => c.id === payload.categoryId || String(c.id) === String(payload.categoryId) || (payload.categoryName && c.name.toLowerCase() === payload.categoryName.toLowerCase()));
+        if (!catObj && (payload.categoryName || payload.customCategory)) {
+          const catName = payload.categoryName || payload.customCategory;
+          catObj = { id: Date.now(), name: catName, description: `${catName} technical quizzes`, status: 'ACTIVE' };
+          MOCK_CATEGORIES.push(catObj);
+        }
+        const baseQuiz = quizIndex >= 0 ? MOCK_QUIZZES[quizIndex] : {
+          id: quizId,
+          title: payload.title || 'Quiz',
+          description: payload.description || '',
+          categoryId: catObj ? catObj.id : (payload.categoryId || 1),
+          category: catObj ? catObj.name : 'General',
+          difficulty: payload.difficulty || 'EASY',
+          durationMinutes: payload.durationMinutes || 15,
+          passingPercentage: payload.passingPercentage || 70,
+          status: 'DRAFT',
+          questionCount: 0
+        };
+        const updatedQuiz = {
+          ...baseQuiz,
+          ...payload,
+          categoryId: catObj ? catObj.id : (payload.categoryId || baseQuiz.categoryId),
+          category: catObj ? catObj.name : baseQuiz.category
+        };
+        if (quizIndex >= 0) {
+          MOCK_QUIZZES[quizIndex] = updatedQuiz;
+        } else {
+          MOCK_QUIZZES.push(updatedQuiz);
+        }
+        return mockResponse(updatedQuiz);
+      }
+    }
+
     if (method === 'get') {
       return mockResponse({
         content: MOCK_QUIZZES,
@@ -340,6 +387,7 @@ function handleMockRequest(config: any) {
         size: 12
       });
     }
+
     if (method === 'post') {
       const payload = typeof config.data === 'string' ? JSON.parse(config.data || '{}') : (config.data || {});
       let catObj = MOCK_CATEGORIES.find(c => c.id === payload.categoryId || (payload.categoryName && c.name.toLowerCase() === payload.categoryName.toLowerCase()));
@@ -363,52 +411,6 @@ function handleMockRequest(config: any) {
       MOCK_QUIZZES.push(newQuiz);
       return mockResponse(newQuiz, 201);
     }
-  }
-
-  const quizStatusMatch = url.match(/\/admin\/quizzes\/(\d+)\/status/);
-  if (quizStatusMatch && method === 'patch') {
-    const quizId = parseInt(quizStatusMatch[1]);
-    const params = config.params || {};
-    const quiz = MOCK_QUIZZES.find(q => q.id === quizId);
-    if (quiz) quiz.status = params.status || 'PUBLISHED';
-    return mockResponse(quiz || MOCK_QUIZZES[0]);
-  }
-
-  const quizUpdateMatch = url.match(/\/admin\/quizzes\/(\d+)$/);
-  if (quizUpdateMatch && method === 'put') {
-    const quizId = parseInt(quizUpdateMatch[1]);
-    const payload = typeof config.data === 'string' ? JSON.parse(config.data || '{}') : (config.data || {});
-    let quizIndex = MOCK_QUIZZES.findIndex(q => q.id === quizId || String(q.id) === String(quizId));
-    let catObj = MOCK_CATEGORIES.find(c => c.id === payload.categoryId || String(c.id) === String(payload.categoryId) || (payload.categoryName && c.name.toLowerCase() === payload.categoryName.toLowerCase()));
-    if (!catObj && (payload.categoryName || payload.customCategory)) {
-      const catName = payload.categoryName || payload.customCategory;
-      catObj = { id: Date.now(), name: catName, description: `${catName} technical quizzes`, status: 'ACTIVE' };
-      MOCK_CATEGORIES.push(catObj);
-    }
-    const baseQuiz = quizIndex >= 0 ? MOCK_QUIZZES[quizIndex] : {
-      id: quizId,
-      title: payload.title || 'Quiz',
-      description: payload.description || '',
-      categoryId: catObj ? catObj.id : (payload.categoryId || 1),
-      category: catObj ? catObj.name : 'General',
-      difficulty: payload.difficulty || 'EASY',
-      durationMinutes: payload.durationMinutes || 15,
-      passingPercentage: payload.passingPercentage || 70,
-      status: 'DRAFT',
-      questionCount: 0
-    };
-    const updatedQuiz = {
-      ...baseQuiz,
-      ...payload,
-      categoryId: catObj ? catObj.id : (payload.categoryId || baseQuiz.categoryId),
-      category: catObj ? catObj.name : baseQuiz.category
-    };
-    if (quizIndex >= 0) {
-      MOCK_QUIZZES[quizIndex] = updatedQuiz;
-    } else {
-      MOCK_QUIZZES.push(updatedQuiz);
-    }
-    return mockResponse(updatedQuiz);
   }
 
   // --- ADMIN QUESTIONS ---
