@@ -378,23 +378,37 @@ function handleMockRequest(config: any) {
   if (quizUpdateMatch && method === 'put') {
     const quizId = parseInt(quizUpdateMatch[1]);
     const payload = typeof config.data === 'string' ? JSON.parse(config.data || '{}') : (config.data || {});
-    const quizIndex = MOCK_QUIZZES.findIndex(q => q.id === quizId);
-    if (quizIndex >= 0) {
-      let catObj = MOCK_CATEGORIES.find(c => c.id === payload.categoryId || (payload.categoryName && c.name.toLowerCase() === payload.categoryName.toLowerCase()));
-      if (!catObj && (payload.categoryName || payload.customCategory)) {
-        const catName = payload.categoryName || payload.customCategory;
-        catObj = { id: Date.now(), name: catName, description: `${catName} technical quizzes`, status: 'ACTIVE' };
-        MOCK_CATEGORIES.push(catObj);
-      }
-      const updatedQuiz = {
-        ...MOCK_QUIZZES[quizIndex],
-        ...payload,
-        categoryId: catObj ? catObj.id : (payload.categoryId || MOCK_QUIZZES[quizIndex].categoryId),
-        category: catObj ? catObj.name : MOCK_QUIZZES[quizIndex].category
-      };
-      MOCK_QUIZZES[quizIndex] = updatedQuiz;
-      return mockResponse(updatedQuiz);
+    let quizIndex = MOCK_QUIZZES.findIndex(q => q.id === quizId || String(q.id) === String(quizId));
+    let catObj = MOCK_CATEGORIES.find(c => c.id === payload.categoryId || String(c.id) === String(payload.categoryId) || (payload.categoryName && c.name.toLowerCase() === payload.categoryName.toLowerCase()));
+    if (!catObj && (payload.categoryName || payload.customCategory)) {
+      const catName = payload.categoryName || payload.customCategory;
+      catObj = { id: Date.now(), name: catName, description: `${catName} technical quizzes`, status: 'ACTIVE' };
+      MOCK_CATEGORIES.push(catObj);
     }
+    const baseQuiz = quizIndex >= 0 ? MOCK_QUIZZES[quizIndex] : {
+      id: quizId,
+      title: payload.title || 'Quiz',
+      description: payload.description || '',
+      categoryId: catObj ? catObj.id : (payload.categoryId || 1),
+      category: catObj ? catObj.name : 'General',
+      difficulty: payload.difficulty || 'EASY',
+      durationMinutes: payload.durationMinutes || 15,
+      passingPercentage: payload.passingPercentage || 70,
+      status: 'DRAFT',
+      questionCount: 0
+    };
+    const updatedQuiz = {
+      ...baseQuiz,
+      ...payload,
+      categoryId: catObj ? catObj.id : (payload.categoryId || baseQuiz.categoryId),
+      category: catObj ? catObj.name : baseQuiz.category
+    };
+    if (quizIndex >= 0) {
+      MOCK_QUIZZES[quizIndex] = updatedQuiz;
+    } else {
+      MOCK_QUIZZES.push(updatedQuiz);
+    }
+    return mockResponse(updatedQuiz);
   }
 
   // --- ADMIN QUESTIONS ---
