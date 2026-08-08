@@ -38,7 +38,19 @@ export function QuestionEditorPage() {
     void api.get('/categories').then(({data})=> {
       setCategories(data);
       if (targetCatId && !questionId) {
-        form.setValue('categoryId', Number(targetCatId));
+        const found = (data as Category[]).find(c =>
+          c.id === Number(targetCatId) ||
+          String(c.id) === String(targetCatId) ||
+          c.name.trim().toLowerCase() === String(targetCatId).trim().toLowerCase()
+        );
+        if (found) {
+          form.setValue('categoryId', Number(found.id));
+          setIsCustomCategory(false);
+        } else {
+          setIsCustomCategory(true);
+          form.setValue('customCategoryName', String(targetCatId));
+          form.setValue('categoryId', -1);
+        }
       }
     }).catch(()=>setError('Unable to load categories.'));
 
