@@ -21,9 +21,14 @@ export function AdminCategoriesPage() {
   async function save(values:Form) {
     setError('');
     try {
-      if (editing) await api.put(`/admin/categories/${editing.id}`, values);
-      else await api.post('/admin/categories', values);
-      setEditing(null); form.reset(); await load();
+      if (editing && editing.id) {
+        await api.put(`/admin/categories/${editing.id}`, values);
+      } else {
+        await api.post('/admin/categories', values);
+      }
+      setEditing(null);
+      form.reset({ name: '', description: '' });
+      await load();
     } catch (e:any) { setError(e.response?.data?.message ?? 'Unable to save category.'); }
   }
   async function status(category:Category) {

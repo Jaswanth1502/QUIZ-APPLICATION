@@ -175,12 +175,18 @@ export function QuizEditorPage() {
       <div><label className="label" htmlFor="passing">Passing percentage</label><input id="passing" type="number" min="0" max="100" className="input" {...form.register('passingPercentage',{valueAsNumber:true,min:0,max:100})}/></div>
       <div className="md:col-span-2 flex flex-wrap gap-3 pt-2"><button className="btn btn-primary" disabled={form.formState.isSubmitting}>Save quiz</button>{quizId && <button type="button" className="btn btn-secondary" onClick={() => void publish()}>Publish</button>}</div>
     </form>
-    {quizId && assigned.length > 0 && <div className="card p-7 mt-8">
+    {quizId && <div className="card p-7 mt-8">
       <h2 className="font-serif text-xl font-bold text-[#181c1b] mb-4 border-b border-[#e0e3e1] pb-3">Assigned questions</h2>
-      <div className="table-wrap"><table className="table">
-        <thead><tr><th>Question</th><th>Category</th><th>Difficulty</th><th></th></tr></thead>
-        <tbody>{assigned.map(q => <tr key={q.id}><td className="font-sans font-bold text-[#181c1b]">{q.questionText}</td><td className="font-sans text-[#181c1b] font-medium">{q.category}</td><td><span className="badge">{q.difficulty}</span></td><td><button className="font-bold text-xs uppercase tracking-wider text-[#8A2E2E] hover:underline cursor-pointer" onClick={() => void removeQuestion(q.id)}>Remove</button></td></tr>)}</tbody>
-      </table></div>
+      {assigned.length > 0 ? (
+        <div className="table-wrap"><table className="table">
+          <thead><tr><th>Question</th><th>Category</th><th>Difficulty</th><th></th></tr></thead>
+          <tbody>{assigned.map(q => <tr key={q.id}><td className="font-sans font-bold text-[#181c1b]">{q.questionText || (q as any).text}</td><td className="font-sans text-[#181c1b] font-medium">{q.category}</td><td><span className="badge">{q.difficulty}</span></td><td><button className="font-bold text-xs uppercase tracking-wider text-[#8A2E2E] hover:underline cursor-pointer" onClick={() => void removeQuestion(q.id)}>Remove</button></td></tr>)}</tbody>
+        </table></div>
+      ) : (
+        <div className="py-6 text-center text-[#4d4635] text-sm">
+          No questions assigned to this quiz yet. Click <strong>Create question</strong> or <strong>Add</strong> below to attach custom questions.
+        </div>
+      )}
     </div>}
     {quizId && <div className="card p-7 mt-8">
       <div className="flex flex-wrap justify-between items-end gap-3 mb-4 pb-3 border-b border-[#e0e3e1]"><div><h2 className="font-serif text-xl font-bold text-[#181c1b]">Add questions</h2><p className="font-sans text-xs text-[#4d4635] mt-1">Current question count: {quiz?.questionCount ?? 0}. Duplicate additions are ignored.</p></div><Link className="btn btn-secondary text-xs uppercase tracking-wider font-bold" to={`/admin/questions/new?quizId=${quizId}&categoryId=${quiz?.categoryId ?? (selectedCat > 0 ? selectedCat : '')}`}>Create question</Link></div>

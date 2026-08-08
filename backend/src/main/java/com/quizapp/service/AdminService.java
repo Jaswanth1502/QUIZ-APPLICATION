@@ -42,7 +42,11 @@ public class AdminService {
   @Transactional
   public CategoryResponse updateCategory(Long id, CategoryRequest request) {
     Category category = category(id);
-    category.setName(request.name().trim());
+    String newName = request.name().trim();
+    if (!category.getName().equalsIgnoreCase(newName) && categories.existsByNameIgnoreCase(newName)) {
+      throw new ApiException(HttpStatus.CONFLICT, "Category name already exists.");
+    }
+    category.setName(newName);
     category.setDescription(request.description());
     return CategoryResponse.from(categories.save(category));
   }

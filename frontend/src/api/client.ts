@@ -219,29 +219,20 @@ function handleMockRequest(config: any) {
   }
 
   if (url.includes('/admin/categories')) {
-    if (method === 'get') {
-      return mockResponse({
-        content: MOCK_CATEGORIES,
-        number: 0,
-        totalPages: 1,
-        totalElements: MOCK_CATEGORIES.length,
-        size: 10
-      });
-    }
-    if (method === 'post') {
-      const payload = typeof config.data === 'string' ? JSON.parse(config.data || '{}') : (config.data || {});
-      const newCategory = { id: Date.now(), name: payload.name, description: payload.description, status: 'ACTIVE' };
-      MOCK_CATEGORIES.push(newCategory);
-      return mockResponse(newCategory, 201);
-    }
     const catIdMatch = url.match(/\/admin\/categories\/(\d+)/);
     if (catIdMatch) {
       const catId = parseInt(catIdMatch[1]);
-      const catIndex = MOCK_CATEGORIES.findIndex(c => c.id === catId);
+      const catIndex = MOCK_CATEGORIES.findIndex(c => c.id === catId || String(c.id) === String(catId));
       if (method === 'put') {
         const payload = typeof config.data === 'string' ? JSON.parse(config.data || '{}') : (config.data || {});
         if (catIndex >= 0) {
           MOCK_CATEGORIES[catIndex] = { ...MOCK_CATEGORIES[catIndex], ...payload };
+          // Also update name on any linked quizzes or questions
+          MOCK_QUIZZES.forEach(q => {
+            if (q.categoryId === catId || String(q.categoryId) === String(catId)) {
+              if (payload.name) q.category = payload.name;
+            }
+          });
           return mockResponse(MOCK_CATEGORIES[catIndex]);
         }
       }
@@ -253,6 +244,41 @@ function handleMockRequest(config: any) {
           return mockResponse(MOCK_CATEGORIES[catIndex]);
         }
       }
+    }
+
+    if (method === 'get') {
+      // Clean up duplicates
+      const seen = new Set<string>();
+      const uniqueCats: any[] = [];
+      for (const c of MOCK_CATEGORIES) {
+        const key = (c.name || '').trim().toLowerCase();
+        if (!seen.has(key)) {
+          seen.add(key);
+          uniqueCats.push(c);
+        }
+      }
+      MOCK_CATEGORIES.length = 0;
+      MOCK_CATEGORIES.push(...uniqueCats);
+
+      return mockResponse({
+        content: MOCK_CATEGORIES,
+        number: 0,
+        totalPages: 1,
+        totalElements: MOCK_CATEGORIES.length,
+        size: 10
+      });
+    }
+
+    if (method === 'post') {
+      const payload = typeof config.data === 'string' ? JSON.parse(config.data || '{}') : (config.data || {});
+      const existing = MOCK_CATEGORIES.find(c => c.name.trim().toLowerCase() === (payload.name || '').trim().toLowerCase());
+      if (existing) {
+        existing.description = payload.description || existing.description;
+        return mockResponse(existing);
+      }
+      const newCategory = { id: Date.now(), name: payload.name, description: payload.description, status: 'ACTIVE' };
+      MOCK_CATEGORIES.push(newCategory);
+      return mockResponse(newCategory, 201);
     }
   }
 
@@ -268,22 +294,39 @@ function handleMockRequest(config: any) {
   if (quizQuestionsMatch) {
     const quizId = parseInt(quizQuestionsMatch[1]);
     if (method === 'get') {
-      const questions = MOCK_QUESTIONS[quizId] || MOCK_QUESTIONS[1] || [];
+      const questions = MOCK_QUESTIONS[quizId] || [];
       return mockResponse(questions.map((q: any) => ({
         id: q.id,
-        text: q.text,
-        marks: q.marks,
+        questionText: q.questionText || q.text || '',
+        text: q.text || q.questionText || '',
+        marks: q.marks || 1,
         category: q.category || 'General',
         difficulty: q.difficulty || 'MEDIUM'
       })));
     }
     if (method === 'post') {
+      const params = config.params || {};
+      const questionId = parseInt(params.questionId);
+      let qObj = null;
+      Object.values(MOCK_QUESTIONS).forEach((list: any[]) => {
+        const found = list.find((q: any) => q.id === questionId || String(q.id) === String(questionId));
+        if (found) qObj = found;
+      });
+      if (!MOCK_QUESTIONS[quizId]) MOCK_QUESTIONS[quizId] = [];
+      if (qObj && !MOCK_QUESTIONS[quizId].some((q: any) => q.id === questionId)) {
+        MOCK_QUESTIONS[quizId].push(qObj);
+      }
       return mockResponse({ message: 'Question linked to quiz successfully' });
     }
   }
 
   const quizQuestionDeleteMatch = url.match(/\/admin\/quizzes\/(\d+)\/questions\/(\d+)/);
   if (quizQuestionDeleteMatch && method === 'delete') {
+    const quizId = parseInt(quizQuestionDeleteMatch[1]);
+    const questionId = parseInt(quizQuestionDeleteMatch[2]);
+    if (MOCK_QUESTIONS[quizId]) {
+      MOCK_QUESTIONS[quizId] = MOCK_QUESTIONS[quizId].filter((q: any) => q.id !== questionId && String(q.id) !== String(questionId));
+    }
     return mockResponse({ message: 'Question unlinked successfully' });
   }
 
