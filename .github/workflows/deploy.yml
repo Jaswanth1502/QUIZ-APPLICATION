@@ -7,6 +7,8 @@ on:
 
 permissions:
   contents: write
+  pages: write
+  id-token: write
 
 concurrency:
   group: 'pages'
@@ -37,9 +39,20 @@ jobs:
         env:
           VITE_BASE: '/QUIZ-APPLICATION/'
 
-      - name: Deploy to GitHub Pages
+      - name: Deploy to gh-pages branch
         uses: peaceiris/actions-gh-pages@v4
         with:
           github_token: ${{ secrets.GITHUB_TOKEN }}
           publish_dir: ./frontend/dist
+
+      - name: Upload Artifact for GitHub Actions Pages
+        uses: actions/upload-pages-artifact@v3
+        with:
+          path: ./frontend/dist
+
+      - name: Deploy to GitHub Pages Native
+        id: deployment
+        uses: actions/deploy-pages@v4
+        continue-on-error: true
+
 
