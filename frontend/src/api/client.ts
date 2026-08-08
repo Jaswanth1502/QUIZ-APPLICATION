@@ -159,55 +159,92 @@ function handleMockRequest(config: any) {
     return mockResponse(currentUser || MOCK_USERS[1]);
   }
 
-  // --- USER DASHBOARD & HISTORY ---
+  // --- USER DASHBOARD & HISTORY STORE ---
+  if (! (window as any).__MOCK_USER_ATTEMPTS_STORE) {
+    (window as any).__MOCK_USER_ATTEMPTS_STORE = [
+      {
+        id: 1,
+        attemptId: 1,
+        quizId: 1,
+        quiz: 'Java Core & Object-Oriented Architecture',
+        quizTitle: 'Java Core & Object-Oriented Architecture',
+        score: 40,
+        maximumScore: 40,
+        percentage: 100,
+        correctAnswers: 4,
+        totalQuestions: 4,
+        status: 'PASS',
+        completedAt: '2026-02-05T14:30:00Z'
+      },
+      {
+        id: 2,
+        attemptId: 2,
+        quizId: 2,
+        quiz: 'React 18 Hooks & Component Engineering',
+        quizTitle: 'React 18 Hooks & Component Engineering',
+        score: 30,
+        maximumScore: 40,
+        percentage: 75,
+        correctAnswers: 3,
+        totalQuestions: 4,
+        status: 'PASS',
+        completedAt: '2026-02-04T11:20:00Z'
+      }
+    ];
+  }
+  const userAttempts: any[] = (window as any).__MOCK_USER_ATTEMPTS_STORE;
+
   if ((url.includes('/users/me/dashboard') || url.includes('/user/dashboard/stats')) && method === 'get') {
+    const totalCount = userAttempts.length;
+    const passedCount = userAttempts.filter(a => a.status === 'PASS').length;
+    const bestScore = totalCount > 0 ? Math.max(...userAttempts.map(a => Number(a.percentage) || 0)) : 0;
+    const totalPercentageSum = userAttempts.reduce((sum, a) => sum + (Number(a.percentage) || 0), 0);
+    const averageScore = totalCount > 0 ? Math.round((totalPercentageSum / totalCount) * 10) / 10 : 0;
+
     return mockResponse({
       statistics: {
-        completedQuizzes: 5,
-        passedAttempts: 4,
-        averageScore: 85.0,
-        bestScore: 100.0
+        completedQuizzes: totalCount,
+        passedAttempts: passedCount,
+        averageScore,
+        bestScore
       },
-      totalAttempts: 5,
-      passedAttempts: 4,
-      averageScore: 85.0,
-      bestScore: 100.0,
-      recent: [
-        { id: 1, quiz: 'Java Core & Object-Oriented Architecture', percentage: 100, status: 'PASS', completedAt: '2026-02-05T14:30:00Z' },
-        { id: 2, quiz: 'React 18 Hooks & Component Engineering', percentage: 75, status: 'PASS', completedAt: '2026-02-04T11:20:00Z' }
-      ],
-      recentAttempts: [
-        { attemptId: 1, quizTitle: 'Java Core & Object-Oriented Architecture', percentage: 100, status: 'PASS', completedAt: '2026-02-05T14:30:00Z' },
-        { attemptId: 2, quizTitle: 'React 18 Hooks & Component Engineering', percentage: 75, status: 'PASS', completedAt: '2026-02-04T11:20:00Z' }
-      ]
+      totalAttempts: totalCount,
+      passedAttempts: passedCount,
+      averageScore,
+      bestScore,
+      recent: userAttempts.map(a => ({
+        id: a.id || a.attemptId,
+        quiz: a.quiz || a.quizTitle,
+        percentage: a.percentage,
+        status: a.status,
+        completedAt: a.completedAt
+      })),
+      recentAttempts: userAttempts.map(a => ({
+        attemptId: a.attemptId || a.id,
+        quizTitle: a.quizTitle || a.quiz,
+        percentage: a.percentage,
+        status: a.status,
+        completedAt: a.completedAt
+      }))
     });
   }
 
   if ((url.includes('/users/me/attempts') || url.includes('/user/attempts')) && method === 'get') {
     return mockResponse({
-      content: [
-        {
-          attemptId: 1,
-          quizTitle: 'Java Core & Object-Oriented Architecture',
-          score: 40,
-          maximumScore: 40,
-          percentage: 100,
-          status: 'PASS',
-          completedAt: '2026-02-05T14:30:00Z'
-        },
-        {
-          attemptId: 2,
-          quizTitle: 'React 18 Hooks & Component Engineering',
-          score: 30,
-          maximumScore: 40,
-          percentage: 75,
-          status: 'PASS',
-          completedAt: '2026-02-04T11:20:00Z'
-        }
-      ],
+      content: userAttempts.map(a => ({
+        attemptId: a.attemptId || a.id,
+        quizTitle: a.quizTitle || a.quiz,
+        score: a.score,
+        maximumScore: a.maximumScore,
+        percentage: a.percentage,
+        correctAnswers: a.correctAnswers ?? 4,
+        totalQuestions: a.totalQuestions ?? 4,
+        status: a.status,
+        completedAt: a.completedAt
+      })),
       number: 0,
       totalPages: 1,
-      totalElements: 2
+      totalElements: userAttempts.length
     });
   }
 
