@@ -1,0 +1,16 @@
+spring:
+  datasource:
+    url: jdbc:h2:mem:quiz;MODE=MySQL;DB_CLOSE_DELAY=-1
+    username: sa
+    password:
+  jpa:
+    hibernate:
+      ddl-auto: create-drop
+app:
+  seed:
+    enabled: false
+  security:
+    jwt-secret: test-secret-key-that-is-at-least-32-bytes-long
+    access-expiration-ms: 900000
+    refresh-expiration-ms: 604800000
+    frontend-url: http://localhost:5173

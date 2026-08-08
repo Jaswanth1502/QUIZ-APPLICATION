@@ -1,0 +1,32 @@
+server:
+  port: 8080
+spring:
+  datasource:
+    url: ${DB_URL:jdbc:h2:mem:quiz_application;DB_CLOSE_DELAY=-1;MODE=MySQL}
+    username: ${DB_USERNAME:sa}
+    password: ${DB_PASSWORD:}
+  jpa:
+    hibernate:
+      ddl-auto: update
+    open-in-view: false
+    properties:
+      hibernate:
+        jdbc.time_zone: UTC
+  jackson:
+    default-property-inclusion: non_null
+app:
+  seed:
+    enabled: ${APP_SEED_ENABLED:true}
+  security:
+    jwt-secret: ${JWT_SECRET:replace-this-development-secret-with-at-least-32-characters}
+    access-expiration-ms: ${JWT_ACCESS_EXPIRATION:900000}
+    refresh-expiration-ms: ${JWT_REFRESH_EXPIRATION:604800000}
+    frontend-url: ${FRONTEND_URL:http://localhost:5173}
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info
+springdoc:
+  swagger-ui:
+    path: /swagger-ui.html
