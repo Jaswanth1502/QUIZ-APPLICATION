@@ -1,27 +1,32 @@
-# QuizForge — Next-Gen Interactive Quiz Platform
+# QuizForge — Next-Gen Interactive Quiz & Assessment Platform
 
-QuizForge is a modern, full-stack, production-ready interactive quiz application designed for learners and administrators. It features real-time timed assessments, server-authoritative scoring, instant answer review, performance history analytics, glassmorphic UI aesthetics, and a secure administrator workspace.
+[![Deploy React Frontend to GitHub Pages](https://github.com/Jaswanth1502/QUIZ-APPLICATION/actions/workflows/deploy.yml/badge.svg)](https://github.com/Jaswanth1502/QUIZ-APPLICATION/actions/workflows/deploy.yml)
+[![Live Demo](https://img.shields.io/badge/Live%20Demo-GitHub%20Pages-success?style=flat&logo=github)](https://jaswanth1502.github.io/QUIZ-APPLICATION/)
+[![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](LICENSE)
+
+QuizForge is a modern, full-stack, production-ready interactive quiz and assessment platform engineered for learners and administrators. It features real-time timed assessments, server-authoritative scoring, instant answer reviews, performance analytics, glassmorphic UI aesthetics, cascading relational deletion, and a secure administrator workspace.
+
+🌐 **Live Deployment**: [https://jaswanth1502.github.io/QUIZ-APPLICATION/](https://jaswanth1502.github.io/QUIZ-APPLICATION/)  
+📁 **GitHub Repository**: [https://github.com/Jaswanth1502/QUIZ-APPLICATION.git](https://github.com/Jaswanth1502/QUIZ-APPLICATION.git)
 
 ---
 
-## 🌟 Key Features & Recent Enhancements
+## 🌟 Key Features & Architecture Enhancements
 
 ### 🎯 Learner Experience
-- **Unified Box & Card Architecture**: Clean white cards (`#ffffff`) with smooth `1.25rem` (20px) rounded corners (`.card`), subtle borders, floating soft drop-shadows, and comfortable internal padding.
-- **Emerald Oasis & Academic Gold Aesthetics**: Signature warm mint-cream background (`#f7faf8`), deep obsidian titles (`#181c1b`), Academic Gold primary actions (`#D4AF37`), Sage Green accents (`#5B7564`), and high contrast typography.
-- **Interactive Workflow Cards**: Step-by-step guidance cards on the home page with hover projections, active badges, and automatic mouseleave reset.
-- **Registration to Sign-In Flow**: Creating an account seamlessly redirects to the Sign-In page (`/login`), displays a success notification banner (*"Account created successfully!"*), and pre-fills the username for quick authentication.
-- **Real-World Timed Quizzes**: High-quality, real-world multiple-choice questions for Java, React, Spring Boot, MySQL, and General Knowledge with countdown timers and question navigators.
-- **Server-Authoritative Timing & Scoring**: Correct answers are withheld during attempts and validated on the server. Instant calculation of percentage, pass/fail result, and awarded marks.
-- **Answer Review & Explanations**: Detailed breakdown of every question after submission, showing user selections, correct answers, awarded marks, and technical explanations.
-- **User Dashboard & Quiz History**: Personal statistics dashboard (completed quizzes, average score, best score, recent attempts) and full quiz history powered by transactional JPA queries.
+- **Public Entry & Authentication**: Opens unauthenticated to an intuitive public landing page (`/`). Users can register, log in, or explore published quizzes.
+- **Unified Card & Glassmorphic UI**: Clean white cards (`#ffffff`) with smooth `1.25rem` (20px) rounded corners (`.card`), floating soft drop-shadows, and high-contrast typography.
+- **Real-World Timed Quizzes**: Real-world multiple-choice assessments for Java, React, Spring Boot, MySQL, and General Knowledge with countdown timers and dynamic question navigators.
+- **Server-Authoritative Scoring & Review**: Correct answers are validated on the server. Instant calculation of percentage, pass/fail result, and awarded marks, followed by detailed question-by-question explanations.
+- **Synchronized User Analytics**: Learner Dashboard (`/dashboard`) metrics (*Completed Quizzes*, *Best Score*, *Average Score*, *Recent Activity*) and Quiz History (`/history`) correct answer ratios (*e.g., 4/4*) are computed dynamically from user attempt records with 100% mathematical precision.
 
 ### 🛡️ Administrator Workspace
-- **Admin Sign-In Portal**: Integrated 1-click **"Sign in as Admin"** toggle on the Sign-In page with dedicated admin portal branding and a demo credential auto-fill helper (`admin` / `Admin@12345`).
-- **Platform Analytics**: Comprehensive administrative dashboard displaying active user counts, total quizzes, attempt trends, and performance charts.
-- **Category & Quiz Management**: Create, edit, publish, deactivate, or soft-delete categories and quizzes.
-- **Question Bank Management**: Build question banks with at least four options and exactly one correct answer. Link/unlink questions to quizzes seamlessly.
-- **User Account Management**: Monitor learner activities and activate/deactivate accounts.
+- **Admin Authentication**: Dedicated admin sign-in mode with demo credential auto-fill (`admin` / `Admin@12345`).
+- **Monitored Real-Data Growth Analytics**: Admin Dashboard line graphs scale dynamically and build monotonically to actual monitored active user counts without artificial drops or cliffs.
+- **In-Place Category Management**: Create, edit, deduplicate, and update categories in-place without generating duplicate category rows.
+- **Zero-Default Question Quiz Creator**: Creating a new quiz starts clean with 0 default questions (*"No questions assigned to this quiz yet"*) allowing admins to attach custom questions directly.
+- **Auto-Inherited Category Pre-Selection**: When adding questions from a specific quiz context, the Category dropdown automatically pre-selects the inherited quiz category.
+- **Cascading Question Bank Deletion**: Deleting questions from the Question Bank automatically removes join-table links before deleting the question, eliminating database foreign key conflicts.
 
 ---
 
@@ -30,13 +35,13 @@ QuizForge is a modern, full-stack, production-ready interactive quiz application
 | Layer | Technologies |
 |---|---|
 | **Frontend Framework** | React 18, Vite, TypeScript |
-| **Styling & Icons** | Vanilla Tailwind CSS, Lucide React Icons |
-| **Form Management** | React Hook Form |
-| **Routing** | React Router v6 |
-| **HTTP Client** | Axios (with token handling) |
+| **Styling & Aesthetics** | Custom Tailwind CSS, Lucide React Icons, Glassmorphism |
+| **Form & State** | React Hook Form, React Router v6 |
+| **HTTP Client & Mocking** | Axios (with JWT interceptors and fallback API simulation) |
 | **Backend Framework** | Spring Boot 3.4, Java 21 |
-| **Security & Auth** | Spring Security, JWT (JSON Web Tokens), BCrypt |
+| **Security & Auth** | Spring Security, JWT (JSON Web Tokens), BCrypt Password Hashing |
 | **Persistence & Database** | Spring Data JPA, Hibernate, MySQL 8.4+ / H2 In-Memory DB |
+| **CI/CD & Hosting** | GitHub Actions Workflow (`deploy.yml`), GitHub Pages |
 | **Build & Tooling** | Maven 3.9+, Node.js 22+, Vitest, JUnit 5, Mockito |
 
 ---
@@ -45,12 +50,12 @@ QuizForge is a modern, full-stack, production-ready interactive quiz application
 
 ```mermaid
 flowchart TD
-  User[Learner / Administrator Browser] -->|HTTPS / REST API| Frontend[React + Vite Frontend]
-  Frontend -->|JSON Requests + JWT Header| Gateway[Spring Boot REST Controllers]
+  User[Learner / Administrator Browser] -->|HTTPS / Hash Router| Frontend[React + Vite SPA]
+  Frontend -->|REST API / Axios + JWT| Gateway[Spring Boot Controllers / API Proxy]
   Gateway --> Security[Spring Security + JwtAuthenticationFilter]
   Security --> Service[Transactional Services @Transactional]
   Service --> Repository[Spring Data JPA Repositories]
-  Repository --> Database[(MySQL / H2 Database)]
+  Repository --> Database[(MySQL 8.4 / H2 Database)]
 ```
 
 ---
@@ -59,32 +64,33 @@ flowchart TD
 
 ```text
 QUIZ-APPLICATION/
-├── frontend/                     # React Vite Frontend Application
+├── .github/workflows/           # GitHub Actions CI/CD deployment pipeline (deploy.yml)
+├── frontend/                    # React 18 + Vite + TypeScript Application
 │   ├── src/
-│   │   ├── api/                  # Axios HTTP client configuration
-│   │   ├── components/           # Common components (Header, Footer, StatCard, ErrorAlert, Loading)
-│   │   ├── context/              # AuthContext provider
-│   │   ├── layouts/              # MainLayout, AdminLayout, AuthShell
-│   │   ├── pages/                # Public, User (Dashboard, History), and Admin pages
-│   │   ├── routes/               # Protected route guards (ProtectedRoute, AdminRoute)
-│   │   └── types/                # TypeScript interface & type definitions
+│   │   ├── api/                 # Axios client, interceptors, and API mock handlers
+│   │   ├── components/          # Common UI components (Header, Footer, StatCard, Loading)
+│   │   ├── context/             # AuthContext provider
+│   │   ├── layouts/             # MainLayout, AdminLayout, AuthShell
+│   │   ├── pages/               # Public, User (Dashboard, History), and Admin pages
+│   │   ├── routes/              # Protected route guards (ProtectedRoute, AdminRoute)
+│   │   └── types/               # TypeScript interface & type definitions
 │   ├── package.json
 │   └── vite.config.ts
-├── backend/                      # Spring Boot Backend Application
+├── backend/                     # Spring Boot 3.4 + Java 21 Backend Application
 │   ├── src/main/java/com/quizapp/
-│   │   ├── config/               # Security, DataInitializer, CORS configuration
-│   │   ├── controller/           # REST endpoints (Auth, User, Quiz, Attempt, Admin)
-│   │   ├── dto/                  # Request & Response DTO records
-│   │   ├── entity/               # JPA Entities (User, Role, Quiz, Question, QuizAttempt, etc.)
-│   │   ├── enums/                # AccountStatus, AttemptStatus, Difficulty, QuizStatus, ResultStatus
-│   │   ├── exception/            # Custom ApiException & GlobalExceptionHandler
-│   │   ├── repository/           # Spring Data JPA interfaces
-│   │   ├── security/             # JwtTokenProvider, JwtAuthenticationFilter, UserDetailsService
-│   │   └── service/              # Core business logic services
-│   ├── src/main/resources/       # application.yml configuration
+│   │   ├── config/              # Security, DataInitializer, CORS configuration
+│   │   ├── controller/          # REST Controllers (Auth, User, Quiz, Attempt, Admin)
+│   │   ├── dto/                 # Request & Response DTO records
+│   │   ├── entity/              # JPA Entities (User, Role, Quiz, Question, QuizAttempt, etc.)
+│   │   ├── enums/               # AccountStatus, AttemptStatus, Difficulty, QuizStatus, ResultStatus
+│   │   ├── repository/          # Spring Data JPA repositories
+│   │   ├── security/            # JwtTokenProvider, JwtAuthenticationFilter, UserDetailsService
+│   │   └── service/             # Business logic & admin operations
+│   ├── src/main/resources/      # application.yml configuration
 │   └── pom.xml
-├── database/                     # SQL DDL schemas and seed scripts
-├── docs/                         # Architecture, API specifications, and database docs
+├── index.html                   # Repository root SPA entrypoint for GitHub Pages
+├── 404.html                     # SPA fallback router for GitHub Pages
+├── assets/                      # Production bundled CSS/JS assets
 └── README.md
 ```
 
@@ -92,15 +98,13 @@ QUIZ-APPLICATION/
 
 ## 🔑 Demo Credentials
 
-When auto-seeding is active (`app.seed.enabled=true`), the following pre-configured accounts are seeded:
+When auto-seeding is active (`app.seed.enabled=true`), the following pre-configured accounts are available:
 
 | Role | Username | Password | Default Route |
 |---|---|---|---|
 | **Administrator** | `admin` | `Admin@12345` | `/admin` |
 | **Learner (User)** | `alice` | `User@12345` | `/dashboard` |
 | **Learner (User)** | `bob` | `User@12345` | `/dashboard` |
-
-> *Note: On the Sign-In page, click **"Sign in as Admin"** to access the Admin Portal mode with 1-click credential auto-fill.*
 
 ---
 
@@ -147,20 +151,14 @@ When auto-seeding is active (`app.seed.enabled=true`), the following pre-configu
 
 ---
 
-## 🧪 Testing & Verification
+## ⚙️ CI/CD & Deployment Workflow
 
-### Backend Unit & Integration Tests
-```bash
-cd backend
-mvn test
-```
+Automatic build and deployment is configured via [.github/workflows/deploy.yml](.github/workflows/deploy.yml).
 
-### Frontend Vitest & Production Build
-```bash
-cd frontend
-npm test -- --run
-npm run build
-```
+- On every push to `main`, GitHub Actions:
+  1. Installs Node dependencies and builds the Vite frontend.
+  2. Copies compiled bundle assets to both `gh-pages` branch and repository root.
+  3. Deploys to GitHub Pages at **[https://jaswanth1502.github.io/QUIZ-APPLICATION/](https://jaswanth1502.github.io/QUIZ-APPLICATION/)**.
 
 ---
 
